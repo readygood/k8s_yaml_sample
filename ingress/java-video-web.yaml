@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/service-weight: ""
+  creationTimestamp: "2019-09-26T05:52:18Z"
+  generation: 1
+  name: java-video-web
+  namespace: video-prod
+  resourceVersion: "3594645"
+  selfLink: /apis/extensions/v1beta1/namespaces/video-prod/ingresses/java-video-web
+  uid: cc9977a7-e021-11e9-9bde-00163e122595
+spec:
+  rules:
+  - host: web.gameuuuu.com
+    http:
+      paths:
+      - backend:
+          serviceName: java-video-web
+          servicePort: 8090
+        path: /
+  tls:
+  - hosts:
+    - web.gameuuuu.com
+    secretName: java-video-web-secret0
+status:
+  loadBalancer:
+    ingress:
+    - ip: 47.106.60.210
+
+#生成TSL证书命令：kubectl create java-video-web-secret0 tls secret-https --key tls.key --cert tls.crt

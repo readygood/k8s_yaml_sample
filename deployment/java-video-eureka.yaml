@@ -1,0 +1,84 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  labels:
+    app: java-video-eureka
+  name: java-video-eureka
+  namespace: video-prod
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: java-video-eureka
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: java-video-eureka
+    spec:
+      containers:
+        - env:
+            - name: JAVA_HOME
+              value: /opt/app/java
+            - name: aliyun_logs_java-cloud_stdout
+              value: java-cloud-eureka
+            - name: aliyun_logs_java-cloud_accesslog
+              value: accesslog
+          image: >-
+            registry-vpc.cn-shenzhen.aliyuncs.com/xb-video/java-video-eureka:201909201650
+          imagePullPolicy: Always
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - curl
+                  - '-sv'
+                  - '-X'
+                  - POST
+                  - 'http://localhost:4040/monitor/shutdown'
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /
+              port: 8035
+              scheme: HTTP
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: java-video-eureka
+          ports:
+            - containerPort: 8090
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /
+              port: 8035
+              scheme: HTTP
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            requests:
+              memory: 1500Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /opt/data/jars/logs
+              name: java-logs
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: java-vidoe
+      restartPolicy: Always
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: java-logs

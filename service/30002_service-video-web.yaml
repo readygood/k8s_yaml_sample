@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: java-video-web
+  name: java-video-web
+  namespace: video-prod
+spec:
+  ports:
+  - nodePort: 30002
+    port: 8090
+    protocol: TCP
+    targetPort: 8090
+  selector:
+    app: java-video-web
+  type: NodePort

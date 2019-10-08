@@ -1,0 +1,54 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  labels:
+    app: java-video-admin
+  name: java-video-admin
+  namespace: video-prod
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: java-video-admin
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: java-video-admin
+    spec:
+      containers:
+        - env:
+            - name: LANG
+              value: en_US.UTF-8
+            - name: JAVA_HOME
+              value: /opt/app/java
+            - name: CATALINA_HOME
+              value: /opt/app/tomcat
+            - name: JAVA_OPTS
+              value: >-
+                -server -Xms2048m -Xmx2048m -Xss512k -XX:MetaspaceSize=128m
+                -XX:MaxMetaspaceSize=256m -Djava.awt.headless=true
+          image: >-
+            registry-vpc.cn-shenzhen.aliyuncs.com/xb-video/java-video-admin:201909201756
+          imagePullPolicy: Always
+          name: java-video-admin
+          resources:
+            requests:
+              memory: 2Gi
+          volumeMounts:
+            - mountPath: /opt/app/tomcat/logs
+              name: java-tomcat-logs
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: java-vidoe
+      restartPolicy: Always
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: java-tomcat-logs
